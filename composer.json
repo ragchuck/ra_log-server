@@ -1,0 +1,16 @@
+{
+    "name" : "ra_log/server",
+    "description" : "ra:log server",
+    "minimum-stability" : "dev",
+    "authors" : [
+        {
+            "name" : "Martin Zoellner",
+            "email" : "ragchuck@gmail.com"
+        }
+    ],
+
+    "require": {
+        "slim/slim": "2.2.0",
+        "slim/extras": "2.0.3"
+    }
+}
