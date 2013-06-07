@@ -2,15 +2,24 @@
     "name" : "ra_log/server",
     "description" : "ra:log server",
     "minimum-stability" : "dev",
+    "license": "MIT", 
     "authors" : [
         {
             "name" : "Martin Zoellner",
             "email" : "ragchuck@gmail.com"
         }
     ],
-
-    "require": {
+    "require": 
+    {
         "slim/slim": "2.2.0",
-        "slim/extras": "2.0.3"
+        "slim/extras": "2.0.3",
+        "vrana/notorm": "dev-master"
+    },
+    "autoload": 
+    {
+        "psr-0": 
+        {
+            "Ralog": "app/libs/"
+        }
     }
 }
