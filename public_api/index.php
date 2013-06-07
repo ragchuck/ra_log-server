@@ -13,7 +13,7 @@ $app->get('/', function () use ($app) {
 });
 $app->get('/hello/:name', function ($name) {
     echo "Hello, $name.";
-});
+}); 
 
 //Run the Slim application:
 $app->run();
