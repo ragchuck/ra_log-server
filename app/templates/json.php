@@ -4,5 +4,5 @@ if (!isset($status))
 
 echo json_encode(array(
     'status' => $status, 
-    'result' => $data
+    'result' => $result
         ));

@@ -2,33 +2,53 @@
 
 require '../vendor/autoload.php';
 
+$mode = array_key_exists('SLIM_MODE', $_ENV) ? $_ENV['SLIM_MODE'] : 'development';
+
 // Instantiate a Slim application:
-$app = new \Slim\Slim();
+$app = new \Slim\Slim(require('../app/config/' .$mode . '.php'));
 
-// Config modes
-$app->configureMode('production', function() use ($app) {
-    $app->config(require('../app/config/production.php'));
-});
-$app->configureMode('development', function() use ($app) {
-    $app->config(require('../app/config/development.php'));
+
+// Before Hooks
+$app->hook('slim.before', function() use ($app) {
+    // Set the default content-type
+    $app->contentType('application/json');
+
+    $db = $app->config('db');
+    $db->debug = array($app->getLog(), 'debug');
 });
 
-//Define a HTTP GET route:
+
+// Define a HTTP GET route:
 $app->get('/', function () use ($app) {
-    echo "I'm alive.";
+    $message = sprintf("I'm alive (mode=%s,debug=%s,log=%s)",
+        $app->getMode(),
+        $app->config('debug') ? 'true' : 'false',
+        $app->getLog()->isEnabled() ? 'enabled' : 'disabled'
+    );
+    $app->render('json.php', array('result' => $message));
 });
 
 $app->get('/hello/:name', function ($name) use ($app) {
-    $app->render('json.php', array('data' => "Hello, $name."));
+    $app->render('json.php', array('result' => "Hello, $name."));
 });
 
 $app->get('/test', function() use ($app) {
-    $app->render('json.php', array('data' => $_SERVER));
+    $app->render('json.php', array('result' => $_SERVER));
 });
 
-$app->get('/phpinfo(\.:format)', function () {
+$app->get('/phpinfo', function () use ($app) {
     phpinfo();
     $app->contentType('text/html');
+});
+
+$app->get('/charts', function () use ($app) {
+    $db = $app->config('db');
+    $charts = array();
+    foreach($db->charts() as $chart) {
+        $chart['options'] = json_decode($chart['options']);
+        $charts[] = $chart->jsonSerialize();
+    }
+    $app->render('json.php', array('result' => $charts));
 });
 
 $app->map('/:controller(/:action)', function ($controllerClass, $action = 'index') use ($app) {
@@ -47,7 +67,7 @@ $app->map('/:controller(/:action)', function ($controllerClass, $action = 'index
     
     list($status, $data) = $controller->$method($app->request()->params());
     
-    $app->render('json.php', array('status' => $status, 'data' => $data));
+    $app->render('json.php', array('status' => $status, 'result' => $data));
     
 })->name('controller-action')->via('GET','POST','DELETE','PUT');
 
@@ -69,9 +89,6 @@ $app->notFound(function () use ($app) {
     $app->contentType('application/json');
 });
 
-$app->hook('slim.after', function() use ($app) {
-    $app->contentType('application/json');
-});
 
 //Run the Slim application:
 $app->run();
